@@ -27,11 +27,12 @@ html,
 body {
   width: 100%;
   height: 100%;
+  overflow: hidden;
   background: transparent;
 }
 
 body {
-  min-width: 280px;
+  min-width: 0;
   min-height: 0;
   margin: 0;
   color: var(--text);
@@ -56,6 +57,7 @@ input:focus-visible {
 .app-shell {
   position: absolute;
   inset: 2px;
+  min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 16px;
@@ -78,6 +80,7 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
   min-height: 0;
   padding: 10px;
   overflow: hidden;
@@ -88,6 +91,7 @@ input:focus-visible {
   flex: 0 0 auto;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
   min-height: 0;
   max-height: none;
   margin: 0;
@@ -220,7 +224,7 @@ input:focus-visible {
 }
 
 .repeat-button {
-  min-width: max-content;
+  min-width: 0;
   max-width: 54px;
   min-height: 24px;
   border-radius: 8px;
