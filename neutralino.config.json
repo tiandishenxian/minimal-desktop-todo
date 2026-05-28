@@ -1,0 +1,53 @@
+{
+  "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
+  "applicationId": "app.minimal.desktop.todo",
+  "version": "0.1.0",
+  "defaultMode": "window",
+  "port": 0,
+  "documentRoot": "/app/",
+  "url": "/",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "tokenSecurity": "one-time",
+  "logging": {
+    "enabled": true,
+    "writeToLogFile": true
+  },
+  "nativeAllowList": [
+    "app.*",
+    "window.*",
+    "os.*",
+    "filesystem.*",
+    "events.*",
+    "clipboard.*",
+    "debug.log"
+  ],
+  "modes": {
+    "window": {
+      "title": "Minimal Todo",
+      "width": 300,
+      "height": 74,
+      "minWidth": 280,
+      "minHeight": 58,
+      "center": false,
+      "fullScreen": false,
+      "alwaysOnTop": true,
+      "icon": "/app/assets/icon.png",
+      "enableInspector": false,
+      "borderless": true,
+      "transparent": true,
+      "maximize": false,
+      "hidden": false,
+      "resizable": false,
+      "exitProcessOnClose": false
+    }
+  },
+  "cli": {
+    "binaryName": "MinimalDesktopTodo",
+    "resourcesPath": "/app/",
+    "extensionsPath": "/extensions/",
+    "clientLibrary": "/app/src/neutralino.js",
+    "binaryVersion": "6.7.0",
+    "clientVersion": "6.7.0"
+  }
+}

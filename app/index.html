@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minimal Todo</title>
+    <link rel="icon" href="./assets/icon.png" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <main class="app-shell" aria-label="极简待办">
+      <div class="drag-handle" id="dragHandle" aria-hidden="true"></div>
+
+      <section class="task-list-wrap" id="taskListWrap" aria-label="当前任务">
+        <ul class="task-list" id="taskList"></ul>
+        <form class="quick-add" id="taskForm" autocomplete="off" data-no-drag>
+          <input id="taskInput" name="title" maxlength="80" placeholder="添加任务..." aria-label="任务标题" />
+        </form>
+      </section>
+
+      <section class="history-panel" id="historyPanel" aria-label="历史任务" hidden>
+        <div class="history-header">
+          <span>历史任务</span>
+          <button class="history-close" id="closeHistoryButton" type="button" aria-label="关闭历史任务">x</button>
+        </div>
+        <ul class="history-list" id="historyList"></ul>
+        <p class="history-empty" id="historyEmpty" hidden>暂无历史任务</p>
+      </section>
+
+      <aside class="settings-panel" id="settingsPanel" aria-label="设置" aria-hidden="true">
+        <div class="panel-header">
+          <h2>Settings</h2>
+          <button class="icon-button" id="closeSettingsButton" type="button" title="Close settings" aria-label="Close settings">x</button>
+        </div>
+
+        <label class="setting-row">
+          <span>
+            <strong>Always on top</strong>
+            <small>Keep the window above other apps.</small>
+          </span>
+          <input id="alwaysOnTopToggle" type="checkbox" />
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong>Start at login</strong>
+            <small>Windows only in Core v1.</small>
+          </span>
+          <input id="startAtLoginToggle" type="checkbox" />
+        </label>
+
+        <label class="field-row">
+          <span>Opacity</span>
+          <input id="opacitySlider" type="range" min="70" max="100" step="5" />
+        </label>
+
+        <div class="hotkey-card">
+          <span>Hotkey</span>
+          <kbd id="hotkeyLabel">Ctrl+Alt+T</kbd>
+        </div>
+
+        <div class="panel-actions">
+          <button class="secondary-button" id="exportButton" type="button">Export JSON</button>
+          <button class="danger-button" id="clearButton" type="button">Clear Tasks</button>
+        </div>
+      </aside>
+    </main>
+
+    <template id="taskTemplate">
+      <li class="task-item">
+        <button class="check-button" type="button" aria-label="完成任务"></button>
+        <div class="task-content">
+          <span class="task-title"></span>
+          <input class="task-edit" maxlength="80" aria-label="编辑任务标题" />
+          <div class="task-meta"></div>
+        </div>
+        <button class="repeat-button" type="button" aria-label="修改重复周期">Repeat</button>
+        <button class="delete-button" type="button" aria-label="删除任务">x</button>
+      </li>
+    </template>
+
+    <script src="./src/neutralino.js"></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "minimal-desktop-todo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A tiny always-on-top desktop todo app built with Neutralinojs.",
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "start": "neu run",
+    "build": "neu build --release"
+  },
+  "devDependencies": {
+    "@neutralinojs/neu": "11.7.1"
+  }
+}
