@@ -9,7 +9,8 @@
     "start": "neu run",
     "build:windows-helpers": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-taskbarless-helper.ps1",
     "build:taskbarless-helper": "npm run build:windows-helpers",
-    "build": "npm run build:windows-helpers && neu build --release"
+    "build": "npm run build:windows-helpers && neu build --release",
+    "build:single": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-single-exe.ps1"
   },
   "devDependencies": {
     "@neutralinojs/neu": "11.7.1"

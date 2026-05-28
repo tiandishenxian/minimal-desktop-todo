@@ -1,7 +1,8 @@
 :root {
   color-scheme: light dark;
-  --app-opacity: 1;
-  --glass: rgba(226, 232, 240, 0.58);
+  --surface-alpha: 1;
+  --glass-rgb: 226, 232, 240;
+  --glass: rgba(var(--glass-rgb), var(--surface-alpha));
   --glass-strong: rgba(241, 245, 249, 0.34);
   --line: rgba(102, 112, 133, 0.18);
   --line-strong: rgba(102, 112, 133, 0.28);
@@ -34,7 +35,6 @@ body {
   min-height: 0;
   margin: 0;
   color: var(--text);
-  opacity: var(--app-opacity);
 }
 
 button,
@@ -625,7 +625,7 @@ kbd {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --glass: rgba(30, 41, 59, 0.58);
+    --glass-rgb: 30, 41, 59;
     --glass-strong: rgba(30, 41, 59, 0.34);
     --line: rgba(226, 232, 240, 0.14);
     --line-strong: rgba(226, 232, 240, 0.24);

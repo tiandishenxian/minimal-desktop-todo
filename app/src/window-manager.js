@@ -101,7 +101,7 @@ export async function setAlwaysOnTop(enabled) {
 
 export async function setOpacity(opacity) {
   const safeOpacity = Math.min(1, Math.max(0.3, Number(opacity) || 1));
-  document.documentElement.style.setProperty('--app-opacity', String(safeOpacity));
+  document.documentElement.style.setProperty('--surface-alpha', String(safeOpacity));
   await updateSettings({ window: { opacity: safeOpacity } });
 }
 

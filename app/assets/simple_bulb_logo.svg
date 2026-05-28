@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Minimal lightbulb logo">
+  <title>Minimal Lightbulb Logo</title>
+  <g stroke="#2F363D" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- light rays -->
+    <path d="M64 13V5"/>
+    <path d="M35.5 24.5L29.8 18.8"/>
+    <path d="M92.5 24.5L98.2 18.8"/>
+    <path d="M23 52H15"/>
+    <path d="M105 52H113"/>
+    
+    <!-- bulb outline -->
+    <path d="M88 51C88 37.7 77.3 27 64 27S40 37.7 40 51c0 8.4 4.4 15.7 10.9 19.9 3.4 2.2 5.1 5.4 5.1 9.1v1h16v-1c0-3.7 1.7-6.9 5.1-9.1C83.6 66.7 88 59.4 88 51Z"/>
+    
+    <!-- inner filament -->
+    <path d="M56 54l8 8 8-8"/>
+    <path d="M64 62v13"/>
+    
+    <!-- base -->
+    <path d="M53 88h22"/>
+    <path d="M55 99h18"/>
+    <path d="M59 110h10"/>
+  </g>
+</svg>
