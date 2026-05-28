@@ -7,8 +7,9 @@
   "scripts": {
     "test": "node tests/run-tests.js",
     "start": "neu run",
-    "build:taskbarless-helper": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-taskbarless-helper.ps1",
-    "build": "npm run build:taskbarless-helper && neu build --release"
+    "build:windows-helpers": "powershell -NoProfile -ExecutionPolicy Bypass -File tools/build-taskbarless-helper.ps1",
+    "build:taskbarless-helper": "npm run build:windows-helpers",
+    "build": "npm run build:windows-helpers && neu build --release"
   },
   "devDependencies": {
     "@neutralinojs/neu": "11.7.1"

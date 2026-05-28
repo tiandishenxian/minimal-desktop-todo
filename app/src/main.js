@@ -1,5 +1,6 @@
 import { initHotkeyManager } from './hotkey-manager.js';
 import { initSettingsStore } from './settings-store.js';
+import { initSingletonManager } from './singleton-manager.js';
 import { addTask, getTasks, initTaskStore } from './task-store.js';
 import { initTrayManager } from './tray-manager.js';
 import { createHistoryPanel } from './ui/history-panel.js';
@@ -65,6 +66,11 @@ function bindDateRefresh() {
 
 async function boot() {
   Neutralino.init();
+
+  const isPrimaryInstance = await initSingletonManager();
+  if (!isPrimaryInstance) {
+    return;
+  }
 
   await initSettingsStore();
   await initTaskStore();

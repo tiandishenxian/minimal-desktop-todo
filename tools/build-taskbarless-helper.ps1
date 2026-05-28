@@ -1,9 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$sourcePath = Join-Path $repoRoot 'extensions\window-win\TaskbarlessHelper.cs'
 $outputDir = Join-Path $repoRoot 'extensions\window-win'
-$outputPath = Join-Path $outputDir 'taskbarless-helper.exe'
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 
 if (-not (Test-Path -LiteralPath $compiler)) {
@@ -16,9 +14,27 @@ if (-not (Test-Path -LiteralPath $compiler)) {
 
 New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 
-& $compiler `
-  /nologo `
-  /optimize+ `
-  /target:winexe `
-  "/out:$outputPath" `
-  $sourcePath
+function Build-Helper {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$SourceName,
+
+    [Parameter(Mandatory = $true)]
+    [string]$OutputName,
+
+    [string]$Target = 'winexe'
+  )
+
+  $sourcePath = Join-Path $outputDir $SourceName
+  $outputPath = Join-Path $outputDir $OutputName
+
+  & $compiler `
+    /nologo `
+    /optimize+ `
+    "/target:$Target" `
+    "/out:$outputPath" `
+    $sourcePath
+}
+
+Build-Helper -SourceName 'TaskbarlessHelper.cs' -OutputName 'taskbarless-helper.exe' -Target 'winexe'
+Build-Helper -SourceName 'SingleInstanceHelper.cs' -OutputName 'single-instance-helper.exe' -Target 'exe'
