@@ -113,8 +113,10 @@ function commandQuote(value) {
   return `"${String(value).replaceAll('"', '\\"')}"`;
 }
 
-function nextFrame() {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+async function nextFrame(count = 1) {
+  for (let i = 0; i < count; i += 1) {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  }
 }
 
 function px(value) {
@@ -126,9 +128,18 @@ function panelOuterHeight(panel) {
   return panel.scrollHeight + px(styles.marginTop) + px(styles.marginBottom) + WINDOW_SAFE_INSET;
 }
 
+function stackHeight(container, selector) {
+  const children = [...container.querySelectorAll(selector)].filter((child) => child.offsetParent !== null);
+  const styles = window.getComputedStyle(container);
+  const gap = px(styles.rowGap || styles.gap);
+  return children.reduce((total, child, index) => (
+    total + child.offsetHeight + (index > 0 ? gap : 0)
+  ), 0);
+}
+
 export async function fitWindowToContent() {
   try {
-    await nextFrame();
+    await nextFrame(2);
     const historyPanel = document.querySelector('#historyPanel');
     const historyList = document.querySelector('#historyList');
     if (historyPanel && !historyPanel.hidden) {
@@ -183,7 +194,8 @@ export async function fitWindowToContent() {
     const formStyles = window.getComputedStyle(form);
     const verticalPadding = px(wrapStyles.paddingTop) + px(wrapStyles.paddingBottom);
     const formOuterHeight = form.offsetHeight + px(formStyles.marginTop) + px(formStyles.marginBottom);
-    const contentHeight = list.scrollHeight + formOuterHeight + verticalPadding + 10 + WINDOW_SAFE_INSET;
+    const measuredListHeight = Math.max(list.scrollHeight, stackHeight(list, '.task-item, .task-placeholder'));
+    const contentHeight = measuredListHeight + formOuterHeight + verticalPadding + 10 + WINDOW_SAFE_INSET;
     const targetHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Math.ceil(contentHeight)));
     const isCapped = contentHeight > MAX_HEIGHT;
 
@@ -212,6 +224,7 @@ export async function fitWindowToContent() {
 export async function showWindow() {
   visible = true;
   await Neutralino.window.show();
+  await fitWindowToContent();
   await applyTaskbarlessWindow();
   startTaskbarlessWatcher();
   await Neutralino.window.focus();
