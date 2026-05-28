@@ -129,6 +129,9 @@ export function createTaskList({ listEl, templateEl, onChange }) {
       button.className = 'repeat-inline-option';
       button.classList.toggle('is-selected', currentType === type);
       button.textContent = label;
+      button.addEventListener('pointerdown', () => {
+        panel.dataset.skipCustomBlur = 'true';
+      });
       button.addEventListener('click', async (event) => {
         event.stopPropagation();
         await saveRepeat(task.id, type, 1);
@@ -136,22 +139,17 @@ export function createTaskList({ listEl, templateEl, onChange }) {
       panel.appendChild(button);
     }
 
-    const customWrap = document.createElement('div');
-    customWrap.className = 'repeat-inline-custom';
     const isCustomOpen =
       expandedCustomRepeatTaskId === task.id ||
       (currentType === REPEAT_TYPES.INTERVAL_DAYS && expandedRepeatTaskId === task.id);
-    customWrap.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS || isCustomOpen);
+    const customOption = document.createElement('div');
+    customOption.className = 'repeat-inline-option repeat-inline-custom-option';
+    customOption.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS || isCustomOpen);
+    customOption.setAttribute('role', 'button');
+    customOption.tabIndex = 0;
 
-    const customToggle = document.createElement('button');
-    customToggle.type = 'button';
-    customToggle.className = 'repeat-inline-option repeat-inline-custom-toggle';
-    customToggle.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS || isCustomOpen);
-    customToggle.textContent = 'N\u5929';
-
-    const customControls = document.createElement('span');
-    customControls.className = 'repeat-inline-custom-controls';
-    customControls.hidden = !isCustomOpen;
+    const customPrefix = document.createElement('span');
+    customPrefix.textContent = '\u6bcf';
 
     const intervalInput = document.createElement('input');
     intervalInput.type = 'number';
@@ -161,20 +159,31 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     intervalInput.setAttribute('aria-label', '\u91cd\u590d\u95f4\u9694\u5929\u6570');
     intervalInput.value = String(currentType === REPEAT_TYPES.INTERVAL_DAYS ? task.repeat.interval || 3 : 3);
 
-    const confirmButton = document.createElement('button');
-    confirmButton.type = 'button';
-    confirmButton.className = 'repeat-inline-confirm';
-    confirmButton.textContent = '\u786e\u5b9a';
+    const customSuffix = document.createElement('span');
+    customSuffix.textContent = '\u5929';
 
-    customToggle.addEventListener('click', (event) => {
+    customOption.addEventListener('click', (event) => {
       event.stopPropagation();
+      if (expandedCustomRepeatTaskId === task.id || currentType === REPEAT_TYPES.INTERVAL_DAYS) {
+        intervalInput.focus();
+        intervalInput.select();
+        return;
+      }
       expandedCustomRepeatTaskId = task.id;
       void onChange();
     });
 
-    confirmButton.addEventListener('click', async (event) => {
+    customOption.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        event.stopPropagation();
+        expandedCustomRepeatTaskId = task.id;
+        void onChange();
+      }
+    });
+
+    intervalInput.addEventListener('click', (event) => {
       event.stopPropagation();
-      await saveCustomRepeat(task.id, intervalInput);
     });
 
     intervalInput.addEventListener('keydown', async (event) => {
@@ -183,13 +192,20 @@ export function createTaskList({ listEl, templateEl, onChange }) {
         event.preventDefault();
         await saveCustomRepeat(task.id, intervalInput);
       } else if (event.key === 'Escape') {
+        panel.dataset.skipCustomBlur = 'true';
         closeRepeatInline();
       }
     });
 
-    customControls.append(intervalInput, confirmButton);
-    customWrap.append(customToggle, customControls);
-    panel.appendChild(customWrap);
+    intervalInput.addEventListener('blur', async () => {
+      if (panel.dataset.skipCustomBlur === 'true') {
+        return;
+      }
+      await saveCustomRepeat(task.id, intervalInput);
+    });
+
+    customOption.append(customPrefix, intervalInput, customSuffix);
+    panel.appendChild(customOption);
 
     panel.addEventListener('click', (event) => event.stopPropagation());
     if (isCustomOpen) {

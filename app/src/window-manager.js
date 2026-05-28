@@ -5,7 +5,7 @@ let saveTimer = null;
 let visible = true;
 const MIN_HEIGHT = 62;
 const MAX_HEIGHT = 420;
-const WINDOW_SAFE_INSET = 4;
+const WINDOW_SAFE_INSET = 0;
 const TASKBARLESS_WATCH_SECONDS = 12;
 
 async function logError(scope, error) {
