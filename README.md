@@ -1,23 +1,76 @@
 # Minimal Desktop Todo
 
-A tiny always-on-top desktop todo app built with Neutralinojs, Vanilla JavaScript, native CSS, and local JSON files.
+一个极简桌面待办悬浮条，基于 Neutralinojs、Vanilla JavaScript、原生 CSS 和本地 JSON 存储。
 
-## Commands
+## 核心版功能
+
+- 桌面悬浮待办条，支持置顶和透明度调节。
+- 输入框按 `Enter` 添加任务。
+- 点击任务左侧圆圈完成任务。
+- 双击任务标题编辑，`Enter` 保存，`Esc` 取消，失焦保存。
+- 悬停任务行时显示删除按钮，点击后删除任务。
+- 按住任务行拖拽，可以调整当前待办顺序。
+- 右键任务行设置重复周期：不重复、每天、每周、每月、每 N 天。
+- 重复任务会在完成后推进下次日期，不进入历史完成列表。
+- 右侧仅在任务有重复周期时显示周期文字。
+- 托盘菜单支持显示/隐藏窗口、置顶、开机启动、历史任务、透明度和退出。
+- `Ctrl+Alt+T` 可以快速显示/隐藏窗口。
+- 已完成的一次性任务可以从托盘菜单查看历史。
+
+## 操作方式
+
+### 添加任务
+
+在底部输入框输入内容后按 `Enter`。空内容会被忽略，任务标题会自动去掉首尾空格。
+
+### 完成任务
+
+点击任务左侧的圆圈。一次性任务完成后会从当前列表隐藏，并进入历史任务；重复任务完成后会更新下一次出现日期。
+
+### 编辑任务
+
+双击任务文字进入编辑状态。按 `Enter` 保存，按 `Esc` 取消，或者点击其它地方自动保存。编辑为空时会保留原标题。
+
+### 删除任务
+
+鼠标悬停到任务行，右侧会出现删除按钮。删除是永久删除，不会进入历史。
+
+### 排序任务
+
+按住任务行并拖动，可以改变当前可见任务的顺序。松开鼠标后顺序会保存，重启后仍然保留。
+
+### 设置重复
+
+右键任务行打开重复菜单。可以选择不重复、每天、每周、每月，或输入 N 天作为自定义间隔。
+
+### 托盘菜单
+
+右键系统托盘图标可以打开菜单：
+
+- 显示窗口
+- 隐藏窗口
+- 保持置顶 / 取消置顶
+- 开启开机启动 / 关闭开机启动
+- 查看历史任务
+- 透明度：30%、50%、80%、100%
+- 退出
+
+## 本地数据
+
+任务和设置保存在本机数据目录中，不使用云同步，也不会上传数据。
+
+## 开发命令
 
 ```powershell
 npm install
 npm test
 npm start
 npm run build
+npm run build:single
 ```
 
-## Core v1
+`npm run build:single` 会生成 lite 单文件发布版。`dist/`、`bin/` 和 `node_modules/` 不进入 Git。
 
-- Always-on-top desktop window
-- Add, edit, delete, and complete current tasks
-- Daily, weekly, monthly, and every-N-days repeats
-- Local `tasks.json` and `settings.json`
-- Tray show, hide, always-on-top toggle, start-at-login toggle, and exit
-- Windows `Ctrl+Alt+T` hotkey helper
+## Core v1 范围
 
-Core intentionally excludes history, voice, cloud sync, Electron, React, Vue, SQLite, and large UI dependencies.
+当前版本刻意保持轻量，不包含 Electron、React、Vue、SQLite、云同步、语音、模型文件或大型 UI 依赖。
