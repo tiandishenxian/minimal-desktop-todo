@@ -1,5 +1,6 @@
 import { completeTask, deleteTask, reorderTasks, setTaskRepeat, updateTaskTitle } from '../task-store.js';
 import { describeRepeat, getVisibleTasks, REPEAT_TYPES } from '../repeat-engine.js';
+import { expandWindowForFloatingMenu, fitWindowToContent } from '../window-manager.js';
 
 let activeMenu = null;
 const DRAG_THRESHOLD = 4;
@@ -308,7 +309,7 @@ function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
-function openRepeatMenu({ task, x, y, onChange }) {
+async function openRepeatMenu({ task, x, y, onChange }) {
   closeRepeatMenu();
 
   const menu = document.createElement('div');
@@ -344,6 +345,7 @@ function openRepeatMenu({ task, x, y, onChange }) {
   menu.addEventListener('click', (event) => event.stopPropagation());
 
   document.body.appendChild(menu);
+  await expandWindowForFloatingMenu(menu.getBoundingClientRect().height);
   placeMenu(menu, x, y);
 
   const abortController = new AbortController();
@@ -388,8 +390,11 @@ function createRepeatMenuContent() {
 function placeMenu(menu, x, y) {
   const margin = 8;
   const rect = menu.getBoundingClientRect();
+  const maxHeight = Math.max(80, window.innerHeight - margin * 2);
+  menu.style.maxHeight = `${maxHeight}px`;
+  menu.style.overflowY = rect.height > maxHeight ? 'auto' : 'visible';
   const left = Math.min(Math.max(margin, x), window.innerWidth - rect.width - margin);
-  const top = Math.min(Math.max(margin, y), window.innerHeight - rect.height - margin);
+  const top = Math.min(Math.max(margin, y), window.innerHeight - Math.min(rect.height, maxHeight) - margin);
   menu.style.left = `${left}px`;
   menu.style.top = `${top}px`;
 }
@@ -409,6 +414,7 @@ function closeRepeatMenu() {
   activeMenu.abortController.abort();
   activeMenu.element.remove();
   activeMenu = null;
+  void fitWindowToContent();
 }
 
 async function applyRepeat(taskId, type, interval, onChange) {
