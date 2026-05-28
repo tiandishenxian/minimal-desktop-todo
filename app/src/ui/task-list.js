@@ -4,6 +4,8 @@ import { describeRepeat, getVisibleTasks, REPEAT_TYPES } from '../repeat-engine.
 let activeMenu = null;
 const DRAG_THRESHOLD = 4;
 const DRAG_BLOCK_SELECTOR = 'button, input, .task-edit';
+const AUTOSCROLL_EDGE = 42;
+const AUTOSCROLL_MAX_SPEED = 9;
 
 export function createTaskList({ listEl, templateEl, onChange }) {
   let dragState = null;
@@ -98,11 +100,14 @@ export function createTaskList({ listEl, templateEl, onChange }) {
       placeholder: null,
       dragging: false,
       originalNextSibling: node.nextElementSibling,
+      lastClientY: event.clientY,
+      autoScrollFrame: null,
     };
 
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', finishDrag);
     window.addEventListener('pointercancel', cancelDrag);
+    window.addEventListener('blur', cancelDragOnBlur);
   }
 
   function handlePointerMove(event) {
@@ -117,12 +122,14 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     }
 
     event.preventDefault();
+    dragState.lastClientY = event.clientY;
     if (!dragState.dragging) {
       startDrag(event);
     }
 
     moveDraggedItem(event);
     movePlaceholder(event.clientY);
+    updateAutoScroll(event.clientY);
   }
 
   function startDrag(event) {
@@ -146,12 +153,14 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     node.style.height = `${rect.height}px`;
     document.body.appendChild(node);
     document.body.classList.add('is-task-dragging');
+    updateAutoScroll(event.clientY);
   }
 
   function moveDraggedItem(event) {
     const { node } = dragState;
-    node.style.left = `${event.clientX - dragState.offsetX}px`;
-    node.style.top = `${event.clientY - dragState.offsetY}px`;
+    const bounds = getDragBounds(node);
+    node.style.left = `${clamp(event.clientX - dragState.offsetX, bounds.minX, bounds.maxX)}px`;
+    node.style.top = `${clamp(event.clientY - dragState.offsetY, bounds.minY, bounds.maxY)}px`;
   }
 
   function movePlaceholder(pointerY) {
@@ -166,6 +175,62 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     } else {
       listEl.appendChild(dragState.placeholder);
     }
+  }
+
+  function getDragBounds(node) {
+    const wrap = listEl.closest('.task-list-wrap') || listEl;
+    const rect = wrap.getBoundingClientRect();
+    const height = node.getBoundingClientRect().height || node.offsetHeight || 36;
+    const width = node.getBoundingClientRect().width || node.offsetWidth || rect.width;
+    return {
+      minX: rect.left + 4,
+      maxX: Math.max(rect.left + 4, rect.right - width - 4),
+      minY: rect.top + 4,
+      maxY: Math.max(rect.top + 4, rect.bottom - height - 4),
+    };
+  }
+
+  function updateAutoScroll(pointerY) {
+    dragState.lastClientY = pointerY;
+    if (!dragState.autoScrollFrame) {
+      dragState.autoScrollFrame = requestAnimationFrame(runAutoScroll);
+    }
+  }
+
+  function runAutoScroll() {
+    if (!dragState?.dragging) {
+      return;
+    }
+
+    dragState.autoScrollFrame = null;
+    const speed = getAutoScrollSpeed(dragState.lastClientY);
+    if (speed !== 0) {
+      listEl.scrollTop += speed;
+      movePlaceholder(dragState.lastClientY);
+    }
+
+    if (getAutoScrollSpeed(dragState.lastClientY) !== 0) {
+      dragState.autoScrollFrame = requestAnimationFrame(runAutoScroll);
+    }
+  }
+
+  function getAutoScrollSpeed(pointerY) {
+    if (listEl.scrollHeight <= listEl.clientHeight) {
+      return 0;
+    }
+
+    const rect = listEl.getBoundingClientRect();
+    if (pointerY < rect.top + AUTOSCROLL_EDGE) {
+      const intensity = 1 - Math.max(0, pointerY - rect.top) / AUTOSCROLL_EDGE;
+      return -Math.ceil(intensity * AUTOSCROLL_MAX_SPEED);
+    }
+
+    if (pointerY > rect.bottom - AUTOSCROLL_EDGE) {
+      const intensity = 1 - Math.max(0, rect.bottom - pointerY) / AUTOSCROLL_EDGE;
+      return Math.ceil(intensity * AUTOSCROLL_MAX_SPEED);
+    }
+
+    return 0;
   }
 
   async function finishDrag(event) {
@@ -195,15 +260,24 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     cleanupDrag(true);
   }
 
+  function cancelDragOnBlur() {
+    cleanupDrag(true);
+  }
+
   function cleanupDrag(restoreOriginalPosition = false) {
     if (!dragState) {
       return;
     }
 
     const { node, placeholder, originalNextSibling } = dragState;
+    if (dragState.autoScrollFrame) {
+      cancelAnimationFrame(dragState.autoScrollFrame);
+    }
+
     window.removeEventListener('pointermove', handlePointerMove);
     window.removeEventListener('pointerup', finishDrag);
     window.removeEventListener('pointercancel', cancelDrag);
+    window.removeEventListener('blur', cancelDragOnBlur);
 
     if (placeholder) {
       if (restoreOriginalPosition) {
@@ -228,6 +302,10 @@ export function createTaskList({ listEl, templateEl, onChange }) {
   }
 
   return { render };
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function openRepeatMenu({ task, x, y, onChange }) {
