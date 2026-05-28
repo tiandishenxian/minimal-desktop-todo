@@ -1,8 +1,6 @@
 import { completeTask, deleteTask, reorderTasks, setTaskRepeat, updateTaskTitle } from '../task-store.js';
 import { describeRepeat, getVisibleTasks, REPEAT_TYPES } from '../repeat-engine.js';
-import { expandWindowForFloatingMenu, fitWindowToContent } from '../window-manager.js';
 
-let activeMenu = null;
 const DRAG_THRESHOLD = 4;
 const DRAG_BLOCK_SELECTOR = 'button, input, .task-edit';
 const AUTOSCROLL_EDGE = 42;
@@ -10,13 +8,21 @@ const AUTOSCROLL_MAX_SPEED = 9;
 
 export function createTaskList({ listEl, templateEl, onChange }) {
   let dragState = null;
+  let expandedRepeatTaskId = null;
 
   function render(tasks) {
     const visibleTasks = getVisibleTasks(tasks);
+    if (expandedRepeatTaskId && !visibleTasks.some((task) => task.id === expandedRepeatTaskId)) {
+      expandedRepeatTaskId = null;
+    }
+
     listEl.replaceChildren();
 
     for (const task of visibleTasks) {
       listEl.appendChild(renderTask(task));
+      if (expandedRepeatTaskId === task.id) {
+        listEl.appendChild(renderRepeatInlinePanel(task));
+      }
     }
 
     return visibleTasks.length;
@@ -41,6 +47,7 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     repeatButton.hidden = !isRepeating;
 
     checkButton.addEventListener('click', async () => {
+      closeRepeatInline({ rerender: false });
       await completeTask(task.id);
       await onChange();
     });
@@ -48,24 +55,37 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     node.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      openRepeatMenu({ task, x: event.clientX, y: event.clientY, onChange });
+      toggleRepeatInline(task.id);
     });
 
     node.addEventListener('pointerdown', (event) => prepareDrag(event, node));
 
+    node.addEventListener('click', (event) => {
+      if (
+        expandedRepeatTaskId &&
+        expandedRepeatTaskId !== task.id &&
+        !event.target.closest(DRAG_BLOCK_SELECTOR)
+      ) {
+        closeRepeatInline();
+      }
+    });
+
     repeatButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const rect = repeatButton.getBoundingClientRect();
-      openRepeatMenu({ task, x: rect.left, y: rect.bottom + 4, onChange });
+      toggleRepeatInline(task.id);
     });
 
     deleteButton.addEventListener('click', async () => {
+      closeRepeatInline({ rerender: false });
       await deleteTask(task.id);
       await onChange();
     });
 
-    titleEl.addEventListener('dblclick', () => startEdit(node, editEl));
+    titleEl.addEventListener('dblclick', () => {
+      closeRepeatInline({ rerender: false });
+      startEdit(node, editEl);
+    });
 
     editEl.addEventListener('keydown', async (event) => {
       if (event.key === 'Enter') {
@@ -86,10 +106,137 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     return node;
   }
 
+  function renderRepeatInlinePanel(task) {
+    const panel = document.createElement('li');
+    panel.className = 'repeat-inline-panel';
+    panel.dataset.repeatFor = task.id;
+
+    const currentType = task.repeat?.enabled ? task.repeat.type : REPEAT_TYPES.NONE;
+    const options = [
+      [REPEAT_TYPES.NONE, '\u4e0d\u91cd\u590d'],
+      [REPEAT_TYPES.DAILY, '\u6bcf\u5929'],
+      [REPEAT_TYPES.WEEKLY, '\u6bcf\u5468'],
+      [REPEAT_TYPES.MONTHLY, '\u6bcf\u6708'],
+    ];
+
+    for (const [type, label] of options) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'repeat-inline-option';
+      button.classList.toggle('is-selected', currentType === type);
+      button.textContent = label;
+      button.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        await saveRepeat(task.id, type, 1);
+      });
+      panel.appendChild(button);
+    }
+
+    const customWrap = document.createElement('div');
+    customWrap.className = 'repeat-inline-custom';
+    customWrap.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS);
+
+    const customToggle = document.createElement('button');
+    customToggle.type = 'button';
+    customToggle.className = 'repeat-inline-option repeat-inline-custom-toggle';
+    customToggle.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS);
+    customToggle.textContent = 'N\u5929';
+
+    const customControls = document.createElement('span');
+    customControls.className = 'repeat-inline-custom-controls';
+    customControls.hidden = currentType !== REPEAT_TYPES.INTERVAL_DAYS;
+
+    const intervalInput = document.createElement('input');
+    intervalInput.type = 'number';
+    intervalInput.min = '1';
+    intervalInput.max = '999';
+    intervalInput.inputMode = 'numeric';
+    intervalInput.setAttribute('aria-label', '\u91cd\u590d\u95f4\u9694\u5929\u6570');
+    intervalInput.value = String(currentType === REPEAT_TYPES.INTERVAL_DAYS ? task.repeat.interval || 3 : 3);
+
+    const confirmButton = document.createElement('button');
+    confirmButton.type = 'button';
+    confirmButton.className = 'repeat-inline-confirm';
+    confirmButton.textContent = '\u786e\u5b9a';
+
+    customToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      customControls.hidden = false;
+      customWrap.classList.add('is-selected');
+      customToggle.classList.add('is-selected');
+      intervalInput.focus();
+      intervalInput.select();
+    });
+
+    confirmButton.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      await saveCustomRepeat(task.id, intervalInput);
+    });
+
+    intervalInput.addEventListener('keydown', async (event) => {
+      event.stopPropagation();
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        await saveCustomRepeat(task.id, intervalInput);
+      } else if (event.key === 'Escape') {
+        closeRepeatInline();
+      }
+    });
+
+    customControls.append(intervalInput, confirmButton);
+    customWrap.append(customToggle, customControls);
+    panel.appendChild(customWrap);
+
+    panel.addEventListener('click', (event) => event.stopPropagation());
+    return panel;
+  }
+
+  function toggleRepeatInline(taskId) {
+    expandedRepeatTaskId = expandedRepeatTaskId === taskId ? null : taskId;
+    void onChange();
+  }
+
+  function closeRepeatInline(options = {}) {
+    const { rerender = true } = options;
+    if (!expandedRepeatTaskId) {
+      return;
+    }
+
+    expandedRepeatTaskId = null;
+    if (rerender) {
+      void onChange();
+    } else {
+      listEl.querySelector('.repeat-inline-panel')?.remove();
+    }
+  }
+
+  async function saveRepeat(taskId, type, interval) {
+    await setTaskRepeat(taskId, {
+      enabled: type !== REPEAT_TYPES.NONE,
+      type,
+      interval,
+    });
+    expandedRepeatTaskId = null;
+    await onChange();
+  }
+
+  async function saveCustomRepeat(taskId, intervalInput) {
+    const interval = Number.parseInt(intervalInput.value, 10);
+    if (!Number.isInteger(interval) || interval < 1 || interval > 999) {
+      intervalInput.focus();
+      intervalInput.select();
+      return;
+    }
+
+    await saveRepeat(taskId, REPEAT_TYPES.INTERVAL_DAYS, interval);
+  }
+
   function prepareDrag(event, node) {
     if (event.button !== 0 || node.classList.contains('is-editing') || event.target.closest(DRAG_BLOCK_SELECTOR)) {
       return;
     }
+
+    closeRepeatInline({ rerender: false });
 
     dragState = {
       node,
@@ -145,7 +292,6 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     dragState.offsetY = event.clientY - rect.top;
     dragState.placeholder = placeholder;
     listEl.insertBefore(placeholder, node.nextSibling);
-    closeRepeatMenu();
 
     node.classList.add('is-dragging');
     node.style.left = `${rect.left}px`;
@@ -302,140 +448,17 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     dragState = null;
   }
 
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeRepeatInline();
+    }
+  });
+
   return { render };
 }
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
-}
-
-async function openRepeatMenu({ task, x, y, onChange }) {
-  closeRepeatMenu();
-
-  const menu = document.createElement('div');
-  menu.className = 'repeat-menu';
-  menu.setAttribute('role', 'menu');
-  menu.replaceChildren(...createRepeatMenuContent());
-
-  const currentType = task.repeat?.enabled ? task.repeat.type : REPEAT_TYPES.NONE;
-  for (const button of menu.querySelectorAll('[data-repeat-type]')) {
-    button.classList.toggle('is-selected', button.dataset.repeatType === currentType);
-    button.addEventListener('click', async () => {
-      await applyRepeat(task.id, button.dataset.repeatType, 1, onChange);
-    });
-  }
-
-  const intervalInput = menu.querySelector('input');
-  intervalInput.value = String(task.repeat?.type === REPEAT_TYPES.INTERVAL_DAYS ? task.repeat.interval || 3 : 3);
-  const customButton = menu.querySelector('[data-repeat-custom]');
-  if (currentType === REPEAT_TYPES.INTERVAL_DAYS) {
-    customButton.classList.add('is-selected');
-  }
-
-  customButton.addEventListener('click', async () => {
-    await applyCustomRepeat(task.id, intervalInput, onChange);
-  });
-  intervalInput.addEventListener('keydown', async (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      await applyCustomRepeat(task.id, intervalInput, onChange);
-    }
-    event.stopPropagation();
-  });
-  menu.addEventListener('click', (event) => event.stopPropagation());
-
-  document.body.appendChild(menu);
-  await expandWindowForFloatingMenu(menu.getBoundingClientRect().height);
-  placeMenu(menu, x, y);
-
-  const abortController = new AbortController();
-  const options = { signal: abortController.signal };
-  window.addEventListener('click', closeRepeatMenu, options);
-  window.addEventListener('blur', closeRepeatMenu, options);
-  window.addEventListener('scroll', closeRepeatMenu, true);
-  window.addEventListener('keydown', handleMenuKeydown, options);
-  activeMenu = { element: menu, abortController };
-}
-
-function createRepeatMenuContent() {
-  const fragment = document.createDocumentFragment();
-  const menuItems = [
-    [REPEAT_TYPES.NONE, '\u4e0d\u91cd\u590d'],
-    [REPEAT_TYPES.DAILY, '\u6bcf\u5929'],
-    [REPEAT_TYPES.WEEKLY, '\u6bcf\u5468'],
-    [REPEAT_TYPES.MONTHLY, '\u6bcf\u6708'],
-  ];
-
-  for (const [type, label] of menuItems) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.repeatType = type;
-    button.textContent = label;
-    fragment.appendChild(button);
-  }
-
-  const customRow = document.createElement('div');
-  customRow.className = 'repeat-menu-custom';
-  customRow.innerHTML = `
-    <span>\u6bcf</span>
-    <input type="number" min="1" max="999" inputmode="numeric" aria-label="Repeat interval days" />
-    <span>\u5929</span>
-    <button type="button" data-repeat-custom>\u786e\u5b9a</button>
-  `;
-  fragment.appendChild(customRow);
-
-  return [fragment];
-}
-
-function placeMenu(menu, x, y) {
-  const margin = 8;
-  const rect = menu.getBoundingClientRect();
-  const maxHeight = Math.max(80, window.innerHeight - margin * 2);
-  menu.style.maxHeight = `${maxHeight}px`;
-  menu.style.overflowY = rect.height > maxHeight ? 'auto' : 'visible';
-  const left = Math.min(Math.max(margin, x), window.innerWidth - rect.width - margin);
-  const top = Math.min(Math.max(margin, y), window.innerHeight - Math.min(rect.height, maxHeight) - margin);
-  menu.style.left = `${left}px`;
-  menu.style.top = `${top}px`;
-}
-
-function handleMenuKeydown(event) {
-  if (event.key === 'Escape') {
-    closeRepeatMenu();
-  }
-}
-
-function closeRepeatMenu() {
-  if (!activeMenu) {
-    return;
-  }
-
-  window.removeEventListener('scroll', closeRepeatMenu, true);
-  activeMenu.abortController.abort();
-  activeMenu.element.remove();
-  activeMenu = null;
-  void fitWindowToContent();
-}
-
-async function applyRepeat(taskId, type, interval, onChange) {
-  await setTaskRepeat(taskId, {
-    enabled: type !== REPEAT_TYPES.NONE,
-    type,
-    interval,
-  });
-  closeRepeatMenu();
-  await onChange();
-}
-
-async function applyCustomRepeat(taskId, intervalInput, onChange) {
-  const interval = Number.parseInt(intervalInput.value, 10);
-  if (!Number.isInteger(interval) || interval < 1 || interval > 999) {
-    intervalInput.focus();
-    intervalInput.select();
-    return;
-  }
-
-  await applyRepeat(taskId, REPEAT_TYPES.INTERVAL_DAYS, interval, onChange);
 }
 
 function repeatShortLabel(task) {

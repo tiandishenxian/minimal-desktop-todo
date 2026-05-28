@@ -6,7 +6,6 @@ let visible = true;
 const MIN_HEIGHT = 62;
 const MAX_HEIGHT = 420;
 const WINDOW_SAFE_INSET = 4;
-const FLOATING_MENU_MARGIN = 8;
 const TASKBARLESS_WATCH_SECONDS = 12;
 
 async function logError(scope, error) {
@@ -219,28 +218,6 @@ export async function fitWindowToContent() {
     }
   } catch (error) {
     await logError('fitWindowToContent failed', error);
-  }
-}
-
-export async function expandWindowForFloatingMenu(menuHeight) {
-  try {
-    await nextFrame();
-    const size = await Neutralino.window.getSize();
-    const targetHeight = Math.min(
-      MAX_HEIGHT,
-      Math.max(size.height, Math.ceil(menuHeight + FLOATING_MENU_MARGIN * 2 + WINDOW_SAFE_INSET)),
-    );
-
-    if (Math.abs(size.height - targetHeight) > 2) {
-      await Neutralino.window.setSize({
-        width: Math.round(size.width),
-        height: targetHeight,
-      });
-    }
-
-    await nextFrame(2);
-  } catch (error) {
-    await logError('expandWindowForFloatingMenu failed', error);
   }
 }
 
