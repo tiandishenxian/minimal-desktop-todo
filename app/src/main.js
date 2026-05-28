@@ -6,7 +6,7 @@ import { createHistoryPanel } from './ui/history-panel.js';
 import { createSettingsPanel } from './ui/settings-panel.js';
 import { createTaskList } from './ui/task-list.js';
 import { initTextContextMenu } from './ui/text-context-menu.js';
-import { fitWindowToContent, initWindowManager } from './window-manager.js';
+import { fitWindowToContent, initWindowManager, showWindow } from './window-manager.js';
 
 const elements = {
   taskListWrap: document.querySelector('#taskListWrap'),
@@ -105,6 +105,7 @@ async function boot() {
   await initTrayManager(() => settingsView.render(), () => historyView.open());
   await initHotkeyManager();
   await render();
+  await showWindow();
 }
 
 boot().catch((error) => {

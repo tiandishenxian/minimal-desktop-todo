@@ -1,10 +1,12 @@
 import { getSettings, saveWindowState, updateSettings } from './settings-store.js';
+import { getAppRoot } from './runtime-paths.js';
 
 let saveTimer = null;
 let visible = true;
 const MIN_HEIGHT = 62;
 const MAX_HEIGHT = 420;
 const WINDOW_SAFE_INSET = 4;
+const TASKBARLESS_WATCH_SECONDS = 12;
 
 async function logError(scope, error) {
   try {
@@ -17,6 +19,7 @@ async function logError(scope, error) {
 export async function initWindowManager() {
   const settings = getSettings();
   await applyWindowSettings(settings.window);
+  await applyTaskbarlessWindow();
 
   try {
     await Neutralino.window.setDraggableRegion('dragHandle');
@@ -100,6 +103,14 @@ export async function setOpacity(opacity) {
   const safeOpacity = Math.min(1, Math.max(0.3, Number(opacity) || 1));
   document.documentElement.style.setProperty('--app-opacity', String(safeOpacity));
   await updateSettings({ window: { opacity: safeOpacity } });
+}
+
+function isWindows() {
+  return String(window.NL_OS || '').toLowerCase().includes('windows');
+}
+
+function commandQuote(value) {
+  return `"${String(value).replaceAll('"', '\\"')}"`;
 }
 
 function nextFrame() {
@@ -201,6 +212,8 @@ export async function fitWindowToContent() {
 export async function showWindow() {
   visible = true;
   await Neutralino.window.show();
+  await applyTaskbarlessWindow();
+  startTaskbarlessWatcher();
   await Neutralino.window.focus();
 }
 
@@ -220,4 +233,30 @@ export async function toggleWindow() {
 export async function exitApp() {
   await saveCurrentWindowState();
   await Neutralino.app.exit();
+}
+
+export async function applyTaskbarlessWindow() {
+  await runTaskbarlessHelper(0, { background: false });
+}
+
+function startTaskbarlessWatcher() {
+  void runTaskbarlessHelper(TASKBARLESS_WATCH_SECONDS, { background: true });
+}
+
+async function runTaskbarlessHelper(watchSeconds, options = {}) {
+  if (!isWindows()) {
+    return;
+  }
+
+  const processId = Number.parseInt(String(window.NL_PID || '0'), 10);
+  const safeProcessId = Number.isInteger(processId) && processId > 0 ? processId : 0;
+
+  const helperPath = `${getAppRoot()}/extensions/window-win/taskbarless-helper.exe`;
+  const command = `${commandQuote(helperPath)} --pid ${safeProcessId} --title ${commandQuote('Minimal Todo')} --watch ${watchSeconds}`;
+
+  try {
+    await Neutralino.os.execCommand(command, { background: Boolean(options.background) });
+  } catch (error) {
+    await logError('taskbarless helper failed', error);
+  }
 }

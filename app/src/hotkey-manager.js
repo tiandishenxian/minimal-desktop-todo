@@ -1,5 +1,6 @@
 import { getDataDir } from './storage-paths.js';
 import { toggleWindow } from './window-manager.js';
+import { getAppRoot } from './runtime-paths.js';
 
 let hotkeyPoll = null;
 let lastSignal = '';
@@ -19,8 +20,7 @@ export async function initHotkeyManager() {
 
   const dataDir = await getDataDir();
   const signalPath = `${dataDir}/hotkey.signal`;
-  const appRoot = String(window.NL_CWD || '.').replaceAll('\\', '/');
-  const scriptPath = `${appRoot}/extensions/hotkey-win/hotkey-listener.ps1`;
+  const scriptPath = `${getAppRoot()}/extensions/hotkey-win/hotkey-listener.ps1`;
   const command = `powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -WindowStyle Hidden powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -File ${psQuote(scriptPath)} -SignalPath ${psQuote(signalPath)}'"`;
 
   try {
