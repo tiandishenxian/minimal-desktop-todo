@@ -194,7 +194,10 @@ export async function fitWindowToContent() {
     const formStyles = window.getComputedStyle(form);
     const verticalPadding = px(wrapStyles.paddingTop) + px(wrapStyles.paddingBottom);
     const formOuterHeight = form.offsetHeight + px(formStyles.marginTop) + px(formStyles.marginBottom);
-    const measuredListHeight = Math.max(list.scrollHeight, stackHeight(list, '.task-item, .task-placeholder'));
+    const measuredListHeight = Math.max(
+      list.scrollHeight,
+      stackHeight(list, '.task-item, .task-placeholder, .repeat-inline-panel'),
+    );
     const contentHeight = measuredListHeight + formOuterHeight + verticalPadding + 10 + WINDOW_SAFE_INSET;
     const targetHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Math.ceil(contentHeight)));
     const isCapped = contentHeight > MAX_HEIGHT;

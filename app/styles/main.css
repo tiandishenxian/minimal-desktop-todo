@@ -1,17 +1,17 @@
 :root {
   color-scheme: light dark;
   --surface-alpha: 1;
-  --glass-rgb: 226, 232, 240;
+  --glass-rgb: 232, 235, 240;
   --glass: rgba(var(--glass-rgb), var(--surface-alpha));
-  --glass-strong: rgba(241, 245, 249, 0.34);
-  --line: rgba(102, 112, 133, 0.18);
-  --line-strong: rgba(102, 112, 133, 0.28);
-  --text: rgba(15, 23, 42, 0.92);
-  --muted: rgba(71, 85, 105, 0.68);
-  --faint: rgba(71, 85, 105, 0.46);
+  --glass-strong: rgba(255, 255, 255, 0.4);
+  --line: rgba(120, 130, 145, 0.16);
+  --line-strong: rgba(120, 130, 145, 0.28);
+  --text: rgba(39, 47, 58, 0.9);
+  --muted: rgba(72, 82, 96, 0.68);
+  --faint: rgba(105, 116, 132, 0.5);
   --accent: rgba(37, 99, 235, 0.82);
   --danger: rgba(180, 35, 24, 0.82);
-  --shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+  --shadow: 0 16px 36px rgba(15, 23, 42, 0.14);
   font-family: Segoe UI, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -59,12 +59,12 @@ input:focus-visible {
   inset: 2px;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 22px;
   background: var(--glass);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(26px) saturate(1.35);
-  -webkit-backdrop-filter: blur(26px) saturate(1.35);
+  backdrop-filter: blur(30px) saturate(1.22);
+  -webkit-backdrop-filter: blur(30px) saturate(1.22);
 }
 
 .drag-handle {
@@ -82,7 +82,7 @@ input:focus-visible {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  padding: 10px;
+  padding: 10px 12px;
   overflow: hidden;
 }
 
@@ -90,7 +90,7 @@ input:focus-visible {
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
   min-width: 0;
   min-height: 0;
   max-height: none;
@@ -111,13 +111,13 @@ input:focus-visible {
 
 .task-item {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto 24px;
+  grid-template-columns: 30px minmax(0, 1fr) auto 24px;
   align-items: center;
-  height: 36px;
-  min-height: 36px;
-  gap: 8px;
-  border-radius: 12px;
-  background: transparent;
+  height: 48px;
+  min-height: 48px;
+  gap: 10px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.2);
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -129,8 +129,8 @@ input:focus-visible {
 }
 
 .task-item {
-  padding: 3px 6px;
-  border: 1px solid transparent;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
 }
 
 .task-item + .task-item {
@@ -138,7 +138,7 @@ input:focus-visible {
 }
 
 .task-item:hover {
-  border-color: var(--line-strong);
+  border-color: rgba(255, 255, 255, 0.54);
   background: rgba(255, 255, 255, 0.28);
 }
 
@@ -162,16 +162,16 @@ input:focus-visible {
 }
 
 .task-placeholder {
-  min-height: 36px;
+  min-height: 48px;
   border: 1px dashed rgba(100, 116, 139, 0.24);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.22);
 }
 
 .check-button {
-  width: 19px;
-  height: 19px;
-  border: 1.8px solid rgba(100, 116, 139, 0.62);
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(118, 130, 148, 0.58);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.18);
   cursor: pointer;
@@ -190,7 +190,7 @@ input:focus-visible {
 .task-edit {
   width: 100%;
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.25;
 }
 
@@ -203,7 +203,7 @@ input:focus-visible {
 
 .task-edit {
   display: none;
-  height: 28px;
+  height: 32px;
   border: 1px solid var(--line-strong);
   border-radius: 9px;
   padding: 0 8px;
@@ -225,14 +225,14 @@ input:focus-visible {
 
 .repeat-button {
   min-width: 0;
-  max-width: 54px;
-  min-height: 24px;
-  border-radius: 8px;
-  padding: 0 5px;
+  max-width: 58px;
+  min-height: 26px;
+  border-radius: 999px;
+  padding: 0 7px;
   overflow: hidden;
   background: transparent;
-  color: rgba(51, 65, 85, 0.72);
-  font-size: 12px;
+  color: rgba(55, 65, 80, 0.72);
+  font-size: 13px;
   font-weight: 600;
   line-height: 1;
   text-align: right;
@@ -269,13 +269,13 @@ input:focus-visible {
 .quick-add {
   display: block;
   flex: 0 0 auto;
-  height: 34px;
-  min-height: 34px;
+  height: 40px;
+  min-height: 40px;
   margin-top: 0;
-  padding: 2px 4px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
+  padding: 2px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.17);
   transition:
     background-color 140ms ease,
     border-color 140ms ease;
@@ -283,21 +283,21 @@ input:focus-visible {
 
 .quick-add:focus-within,
 .quick-add:hover {
-  border-color: transparent;
-  background: transparent;
+  border-color: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 255, 255, 0.24);
 }
 
 .quick-add input {
   display: block;
   width: 100%;
   min-width: 0;
-  height: 28px;
+  height: 34px;
   border: 0;
   border-radius: 8px;
-  padding: 0 6px;
+  padding: 0;
   background: transparent;
   color: var(--text);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .quick-add input::placeholder {
@@ -442,24 +442,24 @@ input:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   align-content: center;
-  min-height: 34px;
-  gap: 4px 5px;
-  padding: 3px 6px 4px 30px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.16);
+  min-height: 42px;
+  gap: 5px 6px;
+  padding: 6px 8px 6px 40px;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.18);
   overflow: hidden;
 }
 
 .repeat-inline-option,
 .repeat-inline-confirm {
   min-width: 0;
-  min-height: 24px;
+  min-height: 30px;
   border-radius: 999px;
-  padding: 0 7px;
+  padding: 0 12px;
   background: transparent;
-  color: rgba(51, 65, 85, 0.74);
-  font-size: 12px;
+  color: rgba(72, 82, 96, 0.72);
+  font-size: 14px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -468,8 +468,8 @@ input:focus-visible {
 .repeat-inline-option:hover,
 .repeat-inline-option.is-selected,
 .repeat-inline-confirm:hover {
-  background: rgba(255, 255, 255, 0.38);
-  color: rgba(15, 23, 42, 0.86);
+  background: rgba(137, 145, 157, 0.28);
+  color: rgba(39, 47, 58, 0.9);
 }
 
 .repeat-inline-custom {
@@ -490,18 +490,18 @@ input:focus-visible {
 }
 
 .repeat-inline-custom input {
-  width: 40px;
-  height: 24px;
+  width: 42px;
+  height: 30px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 0 5px;
   background: rgba(255, 255, 255, 0.32);
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .repeat-inline-confirm {
-  padding: 0 6px;
+  padding: 0 9px;
 }
 
 .settings-panel {
@@ -627,6 +627,16 @@ kbd {
     grid-template-columns: 24px minmax(0, 1fr) minmax(0, auto) 24px;
     gap: 6px;
   }
+
+  .repeat-inline-panel {
+    padding-left: 34px;
+  }
+
+  .repeat-inline-option,
+  .repeat-inline-confirm {
+    padding: 0 9px;
+    font-size: 13px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -652,6 +662,12 @@ kbd {
   .app-shell {
     border-color: rgba(226, 232, 240, 0.16);
     background: var(--glass);
+  }
+
+  .task-item,
+  .quick-add {
+    border-color: rgba(226, 232, 240, 0.12);
+    background: rgba(30, 41, 59, 0.22);
   }
 
   .task-item:hover,

@@ -9,11 +9,16 @@ const AUTOSCROLL_MAX_SPEED = 9;
 export function createTaskList({ listEl, templateEl, onChange }) {
   let dragState = null;
   let expandedRepeatTaskId = null;
+  let expandedCustomRepeatTaskId = null;
 
   function render(tasks) {
     const visibleTasks = getVisibleTasks(tasks);
     if (expandedRepeatTaskId && !visibleTasks.some((task) => task.id === expandedRepeatTaskId)) {
       expandedRepeatTaskId = null;
+      expandedCustomRepeatTaskId = null;
+    }
+    if (expandedCustomRepeatTaskId && expandedCustomRepeatTaskId !== expandedRepeatTaskId) {
+      expandedCustomRepeatTaskId = null;
     }
 
     listEl.replaceChildren();
@@ -116,7 +121,6 @@ export function createTaskList({ listEl, templateEl, onChange }) {
       [REPEAT_TYPES.NONE, '\u4e0d\u91cd\u590d'],
       [REPEAT_TYPES.DAILY, '\u6bcf\u5929'],
       [REPEAT_TYPES.WEEKLY, '\u6bcf\u5468'],
-      [REPEAT_TYPES.MONTHLY, '\u6bcf\u6708'],
     ];
 
     for (const [type, label] of options) {
@@ -134,17 +138,20 @@ export function createTaskList({ listEl, templateEl, onChange }) {
 
     const customWrap = document.createElement('div');
     customWrap.className = 'repeat-inline-custom';
-    customWrap.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS);
+    const isCustomOpen =
+      expandedCustomRepeatTaskId === task.id ||
+      (currentType === REPEAT_TYPES.INTERVAL_DAYS && expandedRepeatTaskId === task.id);
+    customWrap.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS || isCustomOpen);
 
     const customToggle = document.createElement('button');
     customToggle.type = 'button';
     customToggle.className = 'repeat-inline-option repeat-inline-custom-toggle';
-    customToggle.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS);
+    customToggle.classList.toggle('is-selected', currentType === REPEAT_TYPES.INTERVAL_DAYS || isCustomOpen);
     customToggle.textContent = 'N\u5929';
 
     const customControls = document.createElement('span');
     customControls.className = 'repeat-inline-custom-controls';
-    customControls.hidden = currentType !== REPEAT_TYPES.INTERVAL_DAYS;
+    customControls.hidden = !isCustomOpen;
 
     const intervalInput = document.createElement('input');
     intervalInput.type = 'number';
@@ -161,11 +168,8 @@ export function createTaskList({ listEl, templateEl, onChange }) {
 
     customToggle.addEventListener('click', (event) => {
       event.stopPropagation();
-      customControls.hidden = false;
-      customWrap.classList.add('is-selected');
-      customToggle.classList.add('is-selected');
-      intervalInput.focus();
-      intervalInput.select();
+      expandedCustomRepeatTaskId = task.id;
+      void onChange();
     });
 
     confirmButton.addEventListener('click', async (event) => {
@@ -188,11 +192,19 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     panel.appendChild(customWrap);
 
     panel.addEventListener('click', (event) => event.stopPropagation());
+    if (isCustomOpen) {
+      requestAnimationFrame(() => {
+        intervalInput.focus();
+        intervalInput.select();
+      });
+    }
     return panel;
   }
 
   function toggleRepeatInline(taskId) {
-    expandedRepeatTaskId = expandedRepeatTaskId === taskId ? null : taskId;
+    const isClosing = expandedRepeatTaskId === taskId;
+    expandedRepeatTaskId = isClosing ? null : taskId;
+    expandedCustomRepeatTaskId = null;
     void onChange();
   }
 
@@ -203,6 +215,7 @@ export function createTaskList({ listEl, templateEl, onChange }) {
     }
 
     expandedRepeatTaskId = null;
+    expandedCustomRepeatTaskId = null;
     if (rerender) {
       void onChange();
     } else {
@@ -217,6 +230,7 @@ export function createTaskList({ listEl, templateEl, onChange }) {
       interval,
     });
     expandedRepeatTaskId = null;
+    expandedCustomRepeatTaskId = null;
     await onChange();
   }
 
