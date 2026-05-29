@@ -1,23 +1,40 @@
-<svg width="512" height="512" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Minimal lightbulb logo">
-  <title>Minimal Lightbulb Logo</title>
-  <g stroke="#2F363D" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-    <!-- light rays -->
-    <path d="M64 13V5"/>
-    <path d="M35.5 24.5L29.8 18.8"/>
-    <path d="M92.5 24.5L98.2 18.8"/>
-    <path d="M23 52H15"/>
-    <path d="M105 52H113"/>
-    
-    <!-- bulb outline -->
-    <path d="M88 51C88 37.7 77.3 27 64 27S40 37.7 40 51c0 8.4 4.4 15.7 10.9 19.9 3.4 2.2 5.1 5.4 5.1 9.1v1h16v-1c0-3.7 1.7-6.9 5.1-9.1C83.6 66.7 88 59.4 88 51Z"/>
-    
-    <!-- inner filament -->
-    <path d="M56 54l8 8 8-8"/>
-    <path d="M64 62v13"/>
-    
-    <!-- base -->
-    <path d="M53 88h22"/>
-    <path d="M55 99h18"/>
-    <path d="M59 110h10"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="120" y1="120" x2="904" y2="904" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4B8FFF"/>
+      <stop offset="1" stop-color="#3B7DFF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1024" height="1024" rx="140" fill="url(#bg)"/>
+
+  <!-- Bulb body -->
+  <path d="M512 300
+           C402 300 322 379 322 487
+           C322 564 362 610 401 652
+           C425 679 438 706 438 742
+           L438 756
+           H586
+           V742
+           C586 705 600 678 624 651
+           C663 608 702 561 702 487
+           C702 379 622 300 512 300Z"
+        stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Inner filament -->
+  <path d="M454 551 L512 594 L570 551" stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M512 594 V660" stroke="white" stroke-width="28" stroke-linecap="round"/>
+
+  <!-- Bulb base -->
+  <path d="M435 770 H589" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M465 836 H559" stroke="white" stroke-width="28" stroke-linecap="round"/>
+
+  <!-- Rays -->
+  <path d="M512 170 V232" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M278 468 H214" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M810 468 H746" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M348 308 L303 264" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M676 308 L721 264" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M346 640 L292 672" stroke="white" stroke-width="28" stroke-linecap="round"/>
+  <path d="M678 640 L732 672" stroke="white" stroke-width="28" stroke-linecap="round"/>
 </svg>
